@@ -283,6 +283,11 @@ export class AmpStoryPlayer {
           messaging.registerHandler('selectDocument', (event, data) => {
             this.onSelectDocument_(data);
           });
+
+          messaging.registerHandler('documentStateUpdate', (event, data) => {
+            this.onDocumentStateUpdate_(data);
+          });
+
           resolve(messaging);
         },
         (err) => {
@@ -635,6 +640,41 @@ export class AmpStoryPlayer {
       messaging.sendRequest('visibilitychange', {state: visibilityState}, true);
     });
   }
+
+  /**
+   * Updates the visibility state of the story inside the iframe.
+   * @param {number} iframeIdx
+   * @private
+   */
+  initializePageAttachmentListeners_(iframeIdx) {
+    this.messagingPromises_[iframeIdx].then((messaging) => {
+      messaging.sendRequest('onDocumentState', {state: "PAGE_ATTACHMENT_STATE"}, true);
+    });
+  }
+
+  /** */
+  onDocumentStateUpdate_() {
+
+
+    this.updateButtonVisibility_(true);
+  }
+
+  /** 
+   * Updates the visbility state of the exit control button.
+   * @param {boolean} isVisible
+   * @private
+   */
+  updateButtonVisibility_(isVisible) {
+    const button = this.rootEl_.querySelector('button');
+    isVisible ? button.classList.remove('hidden') : button.classList.add('hidden');
+  }
+
+  /** */
+  dispatchPageAttachmentEvent(){
+    this.element_.dispatchEvent(createCustomEvent(this.win_, 'page-attachment-open'));
+    this.element_.dispatchEvent(createCustomEvent(this.win_, 'page-attachment-close'));
+  }
+
 
   /**
    * React to selectDocument events.
